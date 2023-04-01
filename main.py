@@ -2,42 +2,62 @@ data_file = "data.txt"
 with open(data_file, 'r') as file_load:
     to_do = file_load.readlines()
 
+
+def write_to_file(todo_list, filename=data_file):
+    with open(filename, 'w') as file:
+        file.writelines(todo_list)
+
+
 while True:
     prompt = input("Enter add, show, edit, remove or exit: ")
-    match prompt.strip():
-        case "add":
-            new_item = input("Enter a new task: ") + "\n"
-            to_do.append(new_item)
-        case "show":
-            if len(to_do) < 1:
-                print("The list is empty!")
-                continue
-            for item in to_do:
-                print(item.strip().capitalize())
-        case "edit":
-            for i, item in enumerate(to_do):
-                print(i, item.strip().capitalize())
-            index = input("Enter the index of the item to be edited: ") + "\n"
-            try:
-                new_item = input("Enter edited task: ")
-                to_do[int(index)] = new_item
-            except:
-                print("Please enter a valid index!")
-        case "remove":
-            if len(to_do) < 1:
-                print("The list has no items")
-                continue
-            for i, item in enumerate(to_do):
-                print(i, item.strip().capitalize())
-            index = input("Enter the index of the item to be deleted: ")
-            try:
-                del to_do[int(index)]
-            except:
-                print("Please enter a valid index!")
-        case "exit":
-            with open(data_file, 'w') as file:
-                file.writelines(to_do)
-            break
-        case _:
-            print("Please enter a valid command!")
+
+    if prompt.startswith("add"):
+        try:
+            # throws exception if there are whitespaces after add
+            prompttest = prompt[2:].strip()
+            if prompttest[1] == 't':
+                pass
+        except:
+            print("Please enter a task!")
             continue
+        new_item = prompt[4:] + '\n'
+        to_do.append(new_item)
+        write_to_file(to_do)
+
+    elif prompt.startswith("show"):
+        if len(to_do) < 1:
+            print("The list is empty!")
+            continue
+        for index, item in enumerate(to_do):
+            print(index, item.strip().capitalize())
+
+    elif prompt.startswith("edit"):
+        index = prompt[5:]
+        try:
+            new_item = input("Enter edited task: ")
+            to_do[int(index)] = new_item + '\n'
+            write_to_file(to_do)
+        except:
+            print("Please enter a valid index!")
+
+    elif prompt.startswith("remove"):
+        if len(to_do) < 1:
+            print("The list has no items")
+            continue
+        index = prompt[7:].split(" ")
+        try:
+            for ind, i in enumerate(index):
+                to_be_removed = to_do[int(i)-ind].strip()
+                del to_do[int(i)-ind]
+                print(to_be_removed.capitalize(), "has been removed")
+        except:
+            print("Please enter a valid index!")
+        write_to_file(to_do)
+
+    elif prompt.startswith("exit"):
+        write_to_file(to_do)
+        break
+
+    else:
+        print("Please enter a valid command!")
+        continue

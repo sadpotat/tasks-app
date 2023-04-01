@@ -1,3 +1,7 @@
-f
-s
+show the house
 t
+test
+test3
+a task
+no more whitespaces yo
+no more white
