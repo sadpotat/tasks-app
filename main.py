@@ -1,10 +1,16 @@
+from time import strftime
+
+print(strftime("Today is %A, %B %d, %Y."))
+print(strftime("It is now %I:%M:%S %p."))
+
 data_file = "data.txt"
 with open(data_file, 'r') as file_load:
     to_do = file_load.readlines()
 
 
-def write_to_file(todo_list, filename=data_file):
-    with open(filename, 'w') as file:
+def write_to_file(todo_list, filepath=data_file):
+    """writes todo_list to filepath."""
+    with open(filepath, 'w') as file:
         file.writelines(todo_list)
 
 
