@@ -31,29 +31,19 @@ def edit_task(todo_list, index, edited_task, filepath=DATA_FILE):
         write_to_file(todo_list, filepath)
         return todo_list
     except:
-        pass
+        return get_from_file()
 
 
-'''
 def remove_task(todo_list, index, filepath=DATA_FILE):
-    if len(todo_list) < 1:
-        print("The list has no items")
-
-    index = prompt[7:].split(" ")
+    """ This method deletes todo_list[index] and 
+        writes the list to filepath. """
     try:
-        for ind, i in enumerate(index):
-            to_be_removed = to_do[int(i)-ind].strip()
-            del to_do[int(i)-ind]
-            print(to_be_removed.capitalize(), "has been removed")
+        del todo_list[index]
+        write_to_file(todo_list, filepath)
+        return todo_list
     except:
-        print("Please enter a valid index!")
-    write_to_file(todo_list, filepath)
+        return get_from_file()
 
-
-print(strftime("Today is %A, %B %d, %Y."))
-print(strftime("It is now %I:%M:%S %p."))
-
-'''
 
 if __name__ == '__main__':
-    print("practising modules")
+    pass

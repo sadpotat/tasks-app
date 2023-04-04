@@ -1,7 +1,3 @@
-no more whitespaces yo
-no more white
-this is a test
-hi
-working
-more stuff
-
+First task
+Third task
+2
