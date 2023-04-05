@@ -1,4 +1,5 @@
 # from time import strftime
+import PySimpleGUI as gui
 DATA_FILE = "data.txt"  # variables are defined at the beginning, in all caps
 
 
@@ -17,7 +18,6 @@ def write_to_file(todo_list, filepath=DATA_FILE):
 def add_to_list(todo_list, new_task, filepath=DATA_FILE):
     """ This method adds a new item to todo_list and
         then writes the list to filepath. """
-    new_task = new_task + '\n'
     todo_list.append(new_task)
     write_to_file(todo_list, filepath)
     return todo_list
@@ -27,18 +27,21 @@ def edit_task(todo_list, index, edited_task, filepath=DATA_FILE):
     """ This method assigns edited_task to todo_list[index]
         and then writes the list to filepath. """
     try:
-        todo_list[index] = edited_task + '\n'
+        if edited_task in todo_list:
+            gui.popup("Task exists")
+            return todo_list
+        todo_list[index] = edited_task
         write_to_file(todo_list, filepath)
         return todo_list
     except:
         return get_from_file()
 
 
-def remove_task(todo_list, index, filepath=DATA_FILE):
+def remove_task(todo_list, completed_task, filepath=DATA_FILE):
     """ This method deletes todo_list[index] and 
         writes the list to filepath. """
     try:
-        del todo_list[index]
+        todo_list.remove(completed_task)
         write_to_file(todo_list, filepath)
         return todo_list
     except:
