@@ -1,4 +1,3 @@
-import time
 import os
 import methods as m
 import PySimpleGUI as gui
@@ -19,42 +18,35 @@ if not os.path.exists(filename):
 
 # GUI widgets
 # here, key is used to identify individual widgets
-day = gui.Text("", key="day")
-clock = gui.Text("", key="clock")
-label = gui.Text("Type in a to-do:")
-inputbox = gui.InputText(tooltip="Enter a to-do here",
-                         key="task", size=[45, 1])
+label = gui.Text("Enter a task:")
+inputbox = gui.InputText(key="task", size=[45, 1])
 add_button = gui.Button(
-    key="Add", image_source=add_icon, size=1, tooltip=" Add to-do ")
+    key="Add", image_source=add_icon, size=1, tooltip=" Add task ")
 listbox = gui.Listbox(values=m.load_from_file(),
-                      key="todo_list", enable_events=True, size=[45, 10],
+                      key="task_list", enable_events=True, size=[45, 10],
                       tooltip=" Current tasks ")
 edit_button = gui.Button(
-    key="Edit", image_source=edit_icon, size=1, tooltip=" Edit to-do ")
+    key="Edit", image_source=edit_icon, size=1, tooltip=" Edit task ")
 complete_button = gui.Button(
-    key="Mark\nCompleted", image_source=complete_icon, size=1, tooltip=" Complete to-do ")
+    key="Complete", image_source=complete_icon, size=1, tooltip=" Complete task ")
 exit_button = gui.Button("Exit")
 
 # Layout takes a list of lists that contain the elements we want to place in the window.
 # Each sublist in the superlist represents a row in the GUI
-layout = [[day, gui.Push(), clock],
-          [label],
+layout = [[label],
           [gui.vtop([gui.Column([[inputbox], [listbox], [exit_button]]),
                      gui.Column([[add_button], [edit_button], [complete_button]])])]]
 
 # places widgets on a window object
 window = gui.Window('Tasks', layout=layout, font=font)
 # loads data from m.DATA_FILE by default
-todo_list = m.load_from_file()
+task_list = m.load_from_file()
 # a flag for the initial prompt, shown only once in every boot
 file_prompted = False
 
 # GUI mainloop:
 while True:
-    # refreshes time
     event, values = window.read(timeout=999)
-    window["clock"].update(value=time.strftime("%I:%M:%S %p"))
-    window["day"].update(value=time.strftime("%A, %B %d, %Y"))
     # conditionals related to the Confirmation popup
     if not file_prompted:
         button = gui.popup_ok_cancel("Do you want to load a different file?",
@@ -68,8 +60,8 @@ while True:
                 continue
             if fname is not None and fname != "":
                 filename = fname
-                todo_list = m.load_from_file(filepath=filename)
-                window["todo_list"].update(values=todo_list)
+                task_list = m.load_from_file(filepath=filename)
+                window["task_list"].update(values=task_list)
             file_prompted = True
             continue
         else:
@@ -85,22 +77,22 @@ while True:
                 continue
             new_task = new_task.capitalize() + '\n'
             # rejects duplicates
-            if new_task in todo_list:
+            if new_task in task_list:
                 gui.popup("Task already exists!", font=font)
                 continue
-            todo_list = m.add_to_list(todo_list, new_task, filepath=filename)
+            task_list = m.add_to_list(task_list, new_task, filepath=filename)
             # updates the listbox widget
-            window["todo_list"].update(values=todo_list)
+            window["task_list"].update(values=task_list)
 
-        case "todo_list":
+        case "task_list":
             # workaround for IndexErrors
-            if values["todo_list"] == []:
+            if values["task_list"] == []:
                 continue
-            window["task"].update(value=values["todo_list"][0])
+            window["task"].update(value=values["task_list"][0])
 
         case "Edit":
             # rejects when you select empty space in listbox
-            if values["todo_list"] == []:
+            if values["task_list"] == []:
                 gui.popup("Please select a task first!",
                           font=font)
                 continue
@@ -112,24 +104,24 @@ while True:
                 continue
             edited_task = edited_task.capitalize() + '\n'
             # rejects duplicates
-            if edited_task in todo_list:
+            if edited_task in task_list:
                 gui.popup("Task already exists!",
                           font=font)
                 continue
 
-            todo_list = m.edit_task(todo_list, todo_list.index(values["todo_list"][0]),
+            task_list = m.edit_task(task_list, task_list.index(values["task_list"][0]),
                                     edited_task, filepath=filename)
-            window["todo_list"].update(values=todo_list)
+            window["task_list"].update(values=task_list)
 
-        case 'Mark\nCompleted':
+        case 'Complete':
             # rejects when you select empty space
-            if values["todo_list"] == []:
+            if values["task_list"] == []:
                 gui.popup("Please select a task first!",
                           font=font)
                 continue
-            todo_list = m.remove_task(
-                todo_list, values["todo_list"][0], filepath=filename)
-            window["todo_list"].update(values=todo_list)
+            task_list = m.remove_task(
+                task_list, values["task_list"][0], filepath=filename)
+            window["task_list"].update(values=task_list)
             window["task"].update(value="")
 
         case "Exit":
