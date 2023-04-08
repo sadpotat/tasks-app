@@ -96,6 +96,13 @@ def add_to_list(task_list, new_task, filepath):
         return load_from_file(filepath)
 
 
+def add_repeating_task(new_task, filepath):
+    """ This method appends new_task to filepath. """
+    task_list = load_from_file(filepath)
+    if new_task not in task_list:
+        add_to_list(task_list, new_task, filepath)
+
+
 def edit_task(task_list, index, edited_task, filepath):
     """ This method assigns edited_task to task_list[index]
         and then writes the list to filepath. """

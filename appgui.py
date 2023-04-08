@@ -110,6 +110,9 @@ layout = [[gui.Menu(menu_def, font=font)],
 # places widgets on a window object
 window = gui.Window('Tasks', layout=layout, font=font)
 # loads data from m.DATA_FILE by default
+
+rep_temp_file_created = False
+
 task_list = m.load_from_file(FILE_TODAY)
 
 # GUI mainloop:
@@ -117,6 +120,13 @@ while True:
     event, values = window.read()
     print(event)
     print(values)
+
+    if not rep_temp_file_created:
+        # loads repeating tasks into a temp file so that main file isn't affected
+        FILE_REP = load_variables(
+            FILE_REP, FILE_REP, "task_list_rep")[0]
+        filename = FILE_REP
+        rep_temp_file_created = True
 
     match event:
         case "Today's Tasks" | "Repeating Tasks" | "General Tasks":
@@ -190,6 +200,10 @@ while True:
                 gui.popup("Task already exists!", font=font)
                 continue
             task_list = m.add_to_list(task_list, new_task, filepath=filename)
+
+            if values["tabs"] == "tab2":
+                m.add_repeating_task(new_task, loaded_dict["repeat"])
+
             # updates the listbox widget
             window[f"{value_tasklist}"].update(values=task_list)
 
