@@ -4,6 +4,17 @@ from shutil import copy
 import PySimpleGUI as gui
 import methods as m
 
+
+def load_variables(FILE_NAME, fname, window_key):
+    FILE_NAME = temp_path + "//" + \
+        os.path.basename(FILE_NAME)
+    copy(fname, FILE_NAME)
+    task_list = m.load_from_file(FILE_NAME)
+    window[window_key].update(
+        values=task_list)
+    return [FILE_NAME, task_list]
+
+
 # Initialization
 gui.theme("LightGreen7")
 gui.set_options(element_padding=(0, 0))
@@ -123,30 +134,18 @@ while True:
                     if event == "Today's Tasks":
                         # copies loaded profile to a temporary file
                         loaded_dict["today"] = fname
-                        FILE_TODAY = temp_path + "//" + \
-                            os.path.basename(FILE_TODAY)
-                        copy(fname, FILE_TODAY)
-                        task_list = m.load_from_file(FILE_TODAY)
-                        window["task_list_today"].update(
-                            values=task_list)
+                        FILE_TODAY, task_list = load_variables(
+                            FILE_TODAY, fname, "task_list_today")
                         filename = FILE_TODAY
                     elif event == "Repeating Tasks":
                         loaded_dict["repeat"] = fname
-                        FILE_REP = temp_path + "//" + \
-                            os.path.basename(FILE_REP)
-                        copy(fname, FILE_REP)
-                        task_list = m.load_from_file(FILE_REP)
-                        window["task_list_rep"].update(
-                            values=task_list)
+                        FILE_REP, task_list = load_variables(
+                            FILE_REP, fname, "task_list_rep")
                         filename = FILE_REP
                     else:
                         loaded_dict["general"] = fname
-                        FILE_GEN = temp_path + "//" + \
-                            os.path.basename(FILE_GEN)
-                        copy(fname, FILE_GEN)
-                        task_list = m.load_from_file(FILE_GEN)
-                        window["task_list_gen"].update(
-                            values=task_list)
+                        FILE_GEN, task_list = load_variables(
+                            FILE_GEN, fname, "task_list_gen")
                         filename = FILE_GEN
                     m.write_to_config([default_dict, loaded_dict])
 

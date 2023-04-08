@@ -1,6 +1,7 @@
 # Default path
 import os
 import json
+from shutil import copy
 
 APP_DIR = os.path.expanduser("~\\Documents\\Tasker")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
