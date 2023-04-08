@@ -13,14 +13,23 @@ im_size = (24, 24)
 ADD_ICON = r"icons\add.png"
 EDIT_ICON = r"icons\edit.png"
 COMPLETE_ICON = r"icons\done.png"
+SAVE_ICON = r"icons\save.png"
 config_path = m.get_config()
 default_dict = m.get_defaults()
+loaded_dict = m.get_last_loaded_files()
 temp_path = m.check_temp()
 
 # default filepaths are in default_dict
 FILE_TODAY = default_dict["today"]
 FILE_REP = default_dict["repeat"]
 FILE_GEN = default_dict["general"]
+
+# loaded files
+for key, value in loaded_dict.items():
+    if value is None:
+        loaded_dict[key] = default_dict[key]
+
+last_saved = None
 
 # Getting modification dates as datetime objects for daily and repeating tasks
 mod_date = []
@@ -67,6 +76,8 @@ edit_button = gui.Button(
     key="Edit", image_source=EDIT_ICON, size=1, tooltip=" Edit task ")
 complete_button = gui.Button(
     key="Complete", image_source=COMPLETE_ICON, size=1, tooltip=" Complete task ")
+save_button = gui.Button(
+    key="Save", image_source=SAVE_ICON, size=1, tooltip=" Save to profile ")
 exit_button = gui.Button("Exit")
 
 # Layout takes a list of lists that contain the elements we want to place in the window.
@@ -81,7 +92,8 @@ layout = [[gui.Menu(menu_def, font=font)],
           [gui.TabGroup([[gui.Tab("Today", tab_today, key="tab1")],
                          [gui.Tab("Repeating", tab_repeating, key="tab2")],
                          [gui.Tab("General", tab_general, key="tab3")]], key="tabs", enable_events=True),
-           gui.Column([[add_button], [edit_button], [complete_button]])],
+           gui.Column([[add_button], [edit_button], [complete_button],
+                       [gui.T("", size=[1, 3])], [save_button]])],
           [exit_button]]
 
 # places widgets on a window object
@@ -107,8 +119,10 @@ while True:
                         "Loading Aborted: File format is not supported", font=font)
                     continue
                 if fname != "":
+                    fname = os.path.normpath(fname)
                     if event == "Today's Tasks":
                         # copies loaded profile to a temporary file
+                        loaded_dict["today"] = fname
                         FILE_TODAY = temp_path + "//" + \
                             os.path.basename(FILE_TODAY)
                         copy(fname, FILE_TODAY)
@@ -117,6 +131,7 @@ while True:
                             values=task_list)
                         filename = FILE_TODAY
                     elif event == "Repeating Tasks":
+                        loaded_dict["repeat"] = fname
                         FILE_REP = temp_path + "//" + \
                             os.path.basename(FILE_REP)
                         copy(fname, FILE_REP)
@@ -125,6 +140,7 @@ while True:
                             values=task_list)
                         filename = FILE_REP
                     else:
+                        loaded_dict["general"] = fname
                         FILE_GEN = temp_path + "//" + \
                             os.path.basename(FILE_GEN)
                         copy(fname, FILE_GEN)
@@ -132,21 +148,34 @@ while True:
                         window["task_list_gen"].update(
                             values=task_list)
                         filename = FILE_GEN
+                    m.write_to_config([default_dict, loaded_dict])
 
         case "tabs":
             # reloads the task_list and filename variable everytime you switch tabs
             if values["tabs"] == "tab1":
                 filename = FILE_TODAY
+                loaded_key = "today"
                 value_task = "task_today"
                 value_tasklist = "task_list_today"
+                if FILE_TODAY == last_saved:
+                    task_list = m.load_from_file(filename)
+                    window[f"{value_tasklist}"].update(values=task_list)
             elif values["tabs"] == "tab2":
                 filename = FILE_REP
+                loaded_key = "repeat"
                 value_task = "task_rep"
                 value_tasklist = "task_list_rep"
+                if FILE_REP == last_saved:
+                    task_list = m.load_from_file(filename)
+                    window[f"{value_tasklist}"].update(values=task_list)
             else:
                 filename = FILE_GEN
+                loaded_key = "general"
                 value_task = "task_gen"
                 value_tasklist = "task_list_gen"
+                if FILE_GEN == last_saved:
+                    task_list = m.load_from_file(filename)
+                    window[f"{value_tasklist}"].update(values=task_list)
             task_list = m.load_from_file(filename)
 
         case "Add":
@@ -205,6 +234,13 @@ while True:
                 task_list, values[f"{value_tasklist}"][0], filepath=filename)
             window[f"{value_tasklist}"].update(values=task_list)
             window[f"{value_task}"].update(value="")
+
+        case "Save":
+            save_popup = gui.popup_ok_cancel(
+                "This will overwrite the original file")
+            if save_popup == "OK":
+                m.write_to_file(task_list, loaded_dict[loaded_key])
+                last_saved = loaded_dict[loaded_key]
 
         case "Exit":
             break

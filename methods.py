@@ -16,7 +16,7 @@ def create_config(app_dir=APP_DIR, config_path=CONFIG_PATH):
 
     last_loaded = {
         "today": None,
-        "repeath": None,
+        "repeat": None,
         "general": None}
 
     # write file
@@ -42,7 +42,7 @@ def create_defaults(defaults):
 
 
 def get_defaults(app_dir=APP_DIR, config_path=CONFIG_PATH):
-    """ This method returns the path to the default profiles """
+    """ This method returns the path to the default profiles. """
     # Load the JSON data from the file
     with open(config_path, 'r') as file:
         data = json.load(file)
@@ -52,10 +52,24 @@ def get_defaults(app_dir=APP_DIR, config_path=CONFIG_PATH):
 
 
 def check_temp(config_path=CONFIG_PATH):
+    """ This method creates the Temp directory if it does not exist. """
     temp_path = os.path.dirname(config_path) + "//Temp"
     if not os.path.exists(temp_path):
         os.makedirs(temp_path)
     return temp_path
+
+
+def get_last_loaded_files(config_path=CONFIG_PATH):
+    """ This method gets the last_loaded dict from config_path. """
+    with open(config_path, 'r') as file:
+        data = json.load(file)
+    return data[1]
+
+
+def write_to_config(data, config_path=CONFIG_PATH):
+    """ This method updates the config file. """
+    with open(config_path, "w") as outfile:
+        json.dump(data, outfile)
 
 
 def load_from_file(filepath):
