@@ -11,11 +11,14 @@ im_size = (24, 24)
 add_icon = r"icons\add.png"
 edit_icon = r"icons\edit.png"
 complete_icon = r"icons\done.png"
-# file where user data is saved
-filename = m.DATA_FILE
-# creates the file if it doesn't exist
-if not os.path.exists(filename):
-    open(filename, 'a').close()
+# default filepaths are in m.DATA_FILES
+file_today = m.DATA_FILES[0]
+file_rep = m.DATA_FILES[1]
+file_gen = m.DATA_FILES[2]
+# creates the files if they doesn't exist
+for file in m.DATA_FILES:
+    if not os.path.exists(file):
+        open(file, 'a').close()
 
 # Menu
 menu_def = [["File", ["New", "Exit"]],
@@ -33,7 +36,7 @@ edit_button_today = gui.Button(
     key="Edit_today", image_source=edit_icon, size=1, tooltip=" Edit task ")
 complete_button_today = gui.Button(
     key="Complete_today", image_source=complete_icon, size=1, tooltip=" Complete task ")
-listbox_today = gui.Listbox(values=m.load_from_file(),
+listbox_today = gui.Listbox(values=m.load_from_file(file_today),
                             key="task_list_today", enable_events=True, size=[45, 10],
                             tooltip=" Current tasks ")
 
@@ -46,7 +49,7 @@ edit_button_rep = gui.Button(
     key="Edit_rep", image_source=edit_icon, size=1, tooltip=" Edit task ")
 complete_button_rep = gui.Button(
     key="Complete_rep", image_source=complete_icon, size=1, tooltip=" Complete task ")
-listbox_rep = gui.Listbox(values=m.load_from_file(),
+listbox_rep = gui.Listbox(values=m.load_from_file(file_rep),
                           key="task_list_rep", enable_events=True, size=[45, 10],
                           tooltip=" Current tasks ")
 # widgets in Tab3
@@ -58,7 +61,7 @@ edit_button_gen = gui.Button(
     key="Edit_gen", image_source=edit_icon, size=1, tooltip=" Edit task ")
 complete_button_gen = gui.Button(
     key="Complete_gen", image_source=complete_icon, size=1, tooltip=" Complete task ")
-listbox_gen = gui.Listbox(values=m.load_from_file(),
+listbox_gen = gui.Listbox(values=m.load_from_file(file_gen),
                           key="task_list_gen", enable_events=True, size=[45, 10],
                           tooltip=" Current tasks ")
 
@@ -74,7 +77,7 @@ complete_button = gui.Button(
 label = gui.Text("Type in a to-do:")
 inputbox = gui.InputText(tooltip="Enter a to-do here",
                          key="task", size=[45, 1])
-listbox = gui.Listbox(values=m.load_from_file(),
+listbox = gui.Listbox(values=m.load_from_file("data.txt"),
                       key="task_list", enable_events=True, size=[45, 10],
                       tooltip=" Current tasks ")
 # Layout takes a list of lists that contain the elements we want to place in the window.
@@ -99,7 +102,7 @@ layout = [[gui.Menu(menu_def, font=font)],
 # places widgets on a window object
 window = gui.Window('Tasks', layout=layout, font=font)
 # loads data from m.DATA_FILE by default
-task_list = m.load_from_file()
+task_list = m.load_from_file("data.txt")
 
 # GUI mainloop:
 while True:
