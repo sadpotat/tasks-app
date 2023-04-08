@@ -1,5 +1,54 @@
 # Default path
-DATA_FILES = ["Today.txt", "Everyday.txt", "General.txt"]
+import os
+import json
+
+APP_DIR = os.path.expanduser("~\\Documents\\Tasker")
+CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+
+
+def create_config(app_dir=APP_DIR, config_path=CONFIG_PATH):
+    """ This method creates the config file at config_path. """
+    # Create dictionaries to store paths
+    default_paths = {
+        "today": os.path.join(app_dir, "Today.txt"),
+        "repeath": os.path.join(app_dir, "Everyday.txt"),
+        "general": os.path.join(app_dir, "General.txt")}
+
+    last_loaded = {
+        "today": None,
+        "repeath": None,
+        "general": None}
+
+    # write file
+    with open(config_path, "w") as outfile:
+        # Write the data to the file in JSON format
+        json.dump([default_paths, last_loaded], outfile)
+
+
+def get_config(app_dir=APP_DIR, config_path=CONFIG_PATH):
+    """ This method checks if the config file exists 
+    and returns its path. """
+    # Create the config file if it doesn't exist
+    if not os.path.exists(config_path):
+        create_config(app_dir, config_path)
+    return config_path
+
+
+def create_defaults(defaults):
+    """ This method creates the default profiles. """
+    for path in defaults.values():
+        if not os.path.exists(path):
+            open(path, 'a').close()
+
+
+def get_defaults(app_dir=APP_DIR, config_path=CONFIG_PATH):
+    """ This method returns the path to the default profiles """
+    # Load the JSON data from the file
+    with open(config_path, 'r') as file:
+        data = json.load(file)
+    defaults = data[0]
+    create_defaults(defaults)
+    return defaults
 
 
 def load_from_file(filepath):
