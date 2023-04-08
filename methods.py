@@ -11,7 +11,7 @@ def create_config(app_dir=APP_DIR, config_path=CONFIG_PATH):
     # Create dictionaries to store paths
     default_paths = {
         "today": os.path.join(app_dir, "Today.txt"),
-        "repeath": os.path.join(app_dir, "Everyday.txt"),
+        "repeat": os.path.join(app_dir, "Everyday.txt"),
         "general": os.path.join(app_dir, "General.txt")}
 
     last_loaded = {
@@ -49,6 +49,13 @@ def get_defaults(app_dir=APP_DIR, config_path=CONFIG_PATH):
     defaults = data[0]
     create_defaults(defaults)
     return defaults
+
+
+def check_temp(config_path=CONFIG_PATH):
+    temp_path = os.path.dirname(config_path) + "//Temp"
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path)
+    return temp_path
 
 
 def load_from_file(filepath):

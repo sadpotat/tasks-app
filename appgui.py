@@ -1,6 +1,8 @@
 import os
-import methods as m
+from datetime import datetime
+from shutil import copy
 import PySimpleGUI as gui
+import methods as m
 
 # Initialization
 gui.theme("LightGreen7")
@@ -11,14 +13,25 @@ im_size = (24, 24)
 ADD_ICON = r"icons\add.png"
 EDIT_ICON = r"icons\edit.png"
 COMPLETE_ICON = r"icons\done.png"
-# default filepaths are in m.DATA_FILES
-FILE_TODAY = m.DATA_FILES[0]
-FILE_REP = m.DATA_FILES[1]
-FILE_GEN = m.DATA_FILES[2]
-# creates the files if they doesn't exist
-for file in m.DATA_FILES:
-    if not os.path.exists(file):
-        open(file, 'a').close()
+config_path = m.get_config()
+default_dict = m.get_defaults()
+temp_path = m.check_temp()
+
+# default filepaths are in default_dict
+FILE_TODAY = default_dict["today"]
+FILE_REP = default_dict["repeat"]
+FILE_GEN = default_dict["general"]
+
+# Getting modification dates as datetime objects for daily and repeating tasks
+mod_date = []
+for file in [FILE_TODAY, FILE_REP]:
+    # Get the modification time of the file in seconds since the epoch
+    modification_time = os.path.getmtime(file)
+
+    # Convert the modification time into a datetime object
+    modification_datetime = datetime.fromtimestamp(modification_time)
+
+    mod_date.append(modification_datetime)
 
 # Menu
 menu_def = [["File", ["New", "Exit"]],
@@ -88,23 +101,37 @@ while True:
             fname = gui.popup_get_file('File to load', font=font)
             # if you press Cancel instead of Browse, popup_get_file() returns None
             # if you enter an empty path, popup_get_file() returns an empty string
-            if not fname.endswith(".txt"):
-                gui.popup(
-                    "Loading Aborted: File format is not supported", font=font)
-                continue
-            if fname is not None and fname != "":
-                if event == "Today's Tasks":
-                    FILE_TODAY = fname
-                    window["task_list_today"].update(
-                        values=m.load_from_file(FILE_TODAY))
-                elif event == "Repeating Tasks":
-                    FILE_REP = fname
-                    window["task_list_rep"].update(
-                        values=m.load_from_file(FILE_REP))
-                else:
-                    FILE_GEN = fname
-                    window["task_list_gen"].update(
-                        values=m.load_from_file(FILE_GEN))
+            if fname is not None:
+                if not fname.endswith(".txt"):
+                    gui.popup(
+                        "Loading Aborted: File format is not supported", font=font)
+                    continue
+                if fname != "":
+                    if event == "Today's Tasks":
+                        # copies loaded profile to a temporary file
+                        FILE_TODAY = temp_path + "//" + \
+                            os.path.basename(FILE_TODAY)
+                        copy(fname, FILE_TODAY)
+                        task_list = m.load_from_file(FILE_TODAY)
+                        window["task_list_today"].update(
+                            values=task_list)
+                        filename = FILE_TODAY
+                    elif event == "Repeating Tasks":
+                        FILE_REP = temp_path + "//" + \
+                            os.path.basename(FILE_REP)
+                        copy(fname, FILE_REP)
+                        task_list = m.load_from_file(FILE_REP)
+                        window["task_list_rep"].update(
+                            values=task_list)
+                        filename = FILE_REP
+                    else:
+                        FILE_GEN = temp_path + "//" + \
+                            os.path.basename(FILE_GEN)
+                        copy(fname, FILE_GEN)
+                        task_list = m.load_from_file(FILE_GEN)
+                        window["task_list_gen"].update(
+                            values=task_list)
+                        filename = FILE_GEN
 
         case "tabs":
             # reloads the task_list and filename variable everytime you switch tabs
@@ -125,9 +152,6 @@ while True:
         case "Add":
             # rejects whitespaces in input string
             new_task = values[f"{value_task}"].strip()
-            print(new_task)
-            print(values[f"{value_task}"])
-            print(f"{value_task}")
             if new_task == "":
                 gui.popup("Please type a task first!",
                           font=font, no_titlebar=False)
@@ -146,7 +170,7 @@ while True:
             if values[f"{value_tasklist}"] == []:
                 continue
             window[f"{value_task}"].update(
-                value=values[f"{value_tasklist}"][0])
+                value=values[f"{value_tasklist}"][0].strip())
 
         case "Edit":
             # rejects when you select empty space in listbox
