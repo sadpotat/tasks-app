@@ -24,6 +24,7 @@ im_size = (24, 24)
 ADD_ICON = r"icons\add.png"
 EDIT_ICON = r"icons\edit.png"
 COMPLETE_ICON = r"icons\done.png"
+DELETE_ICON = r"icons\delete.png"
 SAVE_ICON = r"icons\save.png"
 config_path = m.get_config()
 default_dict = m.get_defaults()
@@ -87,6 +88,8 @@ edit_button = gui.Button(
     key="Edit", image_source=EDIT_ICON, size=1, tooltip=" Edit task ")
 complete_button = gui.Button(
     key="Complete", image_source=COMPLETE_ICON, size=1, tooltip=" Complete task ")
+delete_button = gui.Button(
+    key="Delete", image_source=DELETE_ICON, size=1, tooltip=" Delete task ")
 save_button = gui.Button(
     key="Save", image_source=SAVE_ICON, size=1, tooltip=" Save to profile ")
 exit_button = gui.Button("Exit")
@@ -103,7 +106,7 @@ layout = [[gui.Menu(menu_def, font=font)],
           [gui.TabGroup([[gui.Tab("Today", tab_today, key="tab1")],
                          [gui.Tab("Repeating", tab_repeating, key="tab2")],
                          [gui.Tab("General", tab_general, key="tab3")]], key="tabs", enable_events=True),
-           gui.Column([[add_button], [edit_button], [complete_button],
+           gui.Column([[add_button], [edit_button], [complete_button], [delete_button],
                        [gui.T("", size=[1, 3])], [save_button]])],
           [exit_button]]
 
@@ -237,12 +240,29 @@ while True:
                                     edited_task, filepath=filename)
             window[f"{value_tasklist}"].update(values=task_list)
 
-        case 'Complete':
+            # also edits task in main profile
+            if values["tabs"] == "tab2":
+                task_temp = m.load_from_file(loaded_dict["repeat"])
+                m.edit_task(task_temp, task_temp.index(values[f"{value_tasklist}"][0]),
+                            edited_task, filepath=loaded_dict["repeat"])
+
+        case 'Complete' | 'Delete':
             # rejects when you select empty space
             if values[f"{value_tasklist}"] == []:
                 gui.popup("Please select a task first!",
                           font=font)
                 continue
+
+            # updates main repeating profile
+            if event == "Delete" and values["tabs"] == "tab2":
+                delete = gui.popup_ok_cancel(
+                    "This will permanently remove the task", font=font)
+                if delete == "OK":
+                    m.remove_task(m.load_from_file(
+                        loaded_dict["repeat"]), values[f"{value_tasklist}"][0], loaded_dict["repeat"])
+                else:
+                    continue
+
             task_list = m.remove_task(
                 task_list, values[f"{value_tasklist}"][0], filepath=filename)
             window[f"{value_tasklist}"].update(values=task_list)
@@ -250,7 +270,7 @@ while True:
 
         case "Save":
             save_popup = gui.popup_ok_cancel(
-                "This will overwrite the original file")
+                "This will overwrite the original file", font=font)
             if save_popup == "OK":
                 m.write_to_file(task_list, loaded_dict[loaded_key])
                 last_saved = loaded_dict[loaded_key]
