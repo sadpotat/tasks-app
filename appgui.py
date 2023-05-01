@@ -197,7 +197,7 @@ while True:
                 gui.popup("Please type a task first!",
                           font=font, no_titlebar=False)
                 continue
-            new_task = new_task.capitalize() + '\n'
+            new_task = new_task[0].upper() + new_task[1:] + '\n'
             # rejects duplicates
             if new_task in task_list:
                 gui.popup("Task already exists!", font=font)
@@ -229,7 +229,7 @@ while True:
                 gui.popup("Please type a task first!",
                           font=font)
                 continue
-            edited_task = edited_task.capitalize() + '\n'
+            edited_task = edited_task[0].upper() + edited_task[1:] + '\n'
             # rejects duplicates
             if edited_task in task_list:
                 gui.popup("Task already exists!",
