@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from shutil import copy
 import PySimpleGUI as gui
-import methods as m
+import functions as m
 
 
 def load_variables(FILE_NAME, fname, window_key):
