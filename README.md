@@ -15,7 +15,6 @@
 
  All data related to the program will be stored in `<user's home directory>\Documents\Tasker\`.  
  <br />
- <br />
  ### Things I haven't been able to implement yet:
  1. Dumping dailies at the start of the next day
  2. The whole repeating tasks function...
