@@ -16,6 +16,4 @@
  All data related to the program will be stored in `<user's home directory>\Documents\Tasker\`.  
  <br />
  ### Things I haven't been able to implement yet:
- 1. Dumping dailies at the start of the next day
- 2. The whole repeating tasks function...
- 3. Figuring out how to package icon images into the program's executable (I'm using PyInstaller).
+ 1. Figuring out how to package icon images into the program's executable (I'm using PyInstaller).
