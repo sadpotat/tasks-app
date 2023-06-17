@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 from shutil import copy
 import PySimpleGUI as gui
 import functions as m
@@ -50,9 +50,13 @@ for file in [FILE_TODAY, FILE_REP]:
     modification_time = os.path.getmtime(file)
 
     # Convert the modification time into a datetime object
-    modification_datetime = datetime.fromtimestamp(modification_time)
+    modification_date = datetime.fromtimestamp(modification_time).date()
 
-    mod_date.append(modification_datetime)
+    mod_date.append(modification_date)
+
+# delete daily tasks if today's date doesn't match last modified date
+if not mod_date[0] == date.today():
+    m.write_to_file([], FILE_TODAY)
 
 # Menu
 menu_def = [["File", ["New", "Exit"]],
@@ -165,6 +169,9 @@ while True:
         case "tabs":
             # reloads the task_list and filename variable everytime you switch tabs
             if values["tabs"] == "tab1":
+                # delete daily tasks if today's date doesn't match last modified date, repeated again in case the application is left running
+                if not mod_date[0] == date.today():
+                    m.write_to_file([], FILE_TODAY)
                 filename = FILE_TODAY
                 loaded_key = "today"
                 value_task = "task_today"
@@ -180,6 +187,7 @@ while True:
                 if FILE_REP == last_saved:
                     task_list = m.load_from_file(filename)
                     window[f"{value_tasklist}"].update(values=task_list)
+
             else:
                 filename = FILE_GEN
                 loaded_key = "general"
