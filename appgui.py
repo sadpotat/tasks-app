@@ -3,7 +3,7 @@ from datetime import datetime, date
 from shutil import copy
 import PySimpleGUI as gui
 import functions as m
-
+print(date.today())
 
 def load_variables(FILE_NAME, fname, window_key):
     FILE_NAME = temp_path + "//" + \
@@ -57,6 +57,16 @@ for file in [FILE_TODAY, FILE_REP]:
 # delete daily tasks if today's date doesn't match last modified date
 if not mod_date[0] == date.today():
     m.write_to_file([], FILE_TODAY)
+print(mod_date)
+# if the temp file for repeating tasks exists and it was created the same day, FILE_REP = <path to temp file>
+# else deletes the temp file so that repeating tasks reload
+rep_temp_path = temp_path + f"//{os.path.basename(FILE_REP)}"
+if os.path.exists(rep_temp_path) and mod_date[1]!=date.today():
+    os.remove(rep_temp_path)
+if not os.path.exists(rep_temp_path):
+    copy(FILE_REP, rep_temp_path)
+FILE_REP = rep_temp_path
+
 
 # Menu
 menu_def = [["File", ["New", "Exit"]],
@@ -118,8 +128,6 @@ layout = [[gui.Menu(menu_def, font=font)],
 window = gui.Window('Tasks', layout=layout, font=font)
 # loads data from m.DATA_FILE by default
 
-rep_temp_file_created = False
-
 task_list = m.load_from_file(FILE_TODAY)
 
 # GUI mainloop:
@@ -127,13 +135,6 @@ while True:
     event, values = window.read()
     print(event)
     print(values)
-
-    if not rep_temp_file_created:
-        # loads repeating tasks into a temp file so that main file isn't affected
-        FILE_REP = load_variables(
-            FILE_REP, FILE_REP, "task_list_rep")[0]
-        filename = FILE_REP
-        rep_temp_file_created = True
 
     match event:
         case "Today's Tasks" | "Repeating Tasks" | "General Tasks":
@@ -156,8 +157,20 @@ while True:
                         filename = FILE_TODAY
                     elif event == "Repeating Tasks":
                         loaded_dict["repeat"] = fname
-                        FILE_REP, task_list = load_variables(
-                            FILE_REP, fname, "task_list_rep")
+                        # checks if fname has a temp file. If the file was modified the same day, load that file else rewrite temp file
+                        rep_temp_path = temp_path + f"//{os.path.basename(fname)}"
+                        if os.path.exists(rep_temp_path):
+                            mod_time = os.path.getmtime(rep_temp_path)
+                            mod_date[1] = datetime.fromtimestamp(mod_time).date()
+                            if mod_date[1]==date.today():
+                                FILE_REP = rep_temp_path
+                                task_list = m.load_from_file(FILE_REP)
+                                window["task_list_rep"].update(
+                                    values=task_list)
+                            else:
+                                os.remove(rep_temp_path)
+                        if not os.path.exists(rep_temp_path):
+                            FILE_REP, task_list = load_variables(FILE_REP, fname, "task_list_rep")
                         filename = FILE_REP
                     else:
                         loaded_dict["general"] = fname
@@ -168,6 +181,7 @@ while True:
 
         case "tabs":
             # reloads the task_list and filename variable everytime you switch tabs
+            
             if values["tabs"] == "tab1":
                 # delete daily tasks if today's date doesn't match last modified date, repeated again in case the application is left running
                 if not mod_date[0] == date.today():
@@ -179,7 +193,19 @@ while True:
                 if FILE_TODAY == last_saved:
                     task_list = m.load_from_file(filename)
                     window[f"{value_tasklist}"].update(values=task_list)
+            
             elif values["tabs"] == "tab2":
+                # if the temp file for repeating tasks exists and it was created the same day, FILE_REP = <path to temp file>
+                # else deletes the temp file so that repeating tasks reload
+                rep_temp_path = temp_path + f"//{os.path.basename(FILE_REP)}"
+                # mod_time = os.path.getmtime(rep_temp_path)
+                # mod_date[1] = datetime.fromtimestamp(mod_time).date()
+                if os.path.exists(rep_temp_path) and mod_date[1]!=date.today():
+                    os.remove(rep_temp_path)
+                if not os.path.exists(rep_temp_path):
+                    copy(loaded_dict["repeat"], rep_temp_path)
+                FILE_REP = rep_temp_path
+                
                 filename = FILE_REP
                 loaded_key = "repeat"
                 value_task = "task_rep"
